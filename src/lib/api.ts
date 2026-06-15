@@ -37,6 +37,11 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   });
 
   if (res.status === 401) {
+    // Login: 401 = kredensial salah, BUKAN sesi kedaluwarsa.
+    // Jangan picu logout app-wide; tampilkan pesan kata sandi.
+    if (path.startsWith('/auth/login')) {
+      throw new Error('Kata sandi salah. Silakan login ulang.');
+    }
     // ✅ FIX: JANGAN sessionLogout() di sini.
     //    Kalau loadAll() fire 12 request sekaligus dan satu balik 401,
     //    sessionLogout() akan hapus token dari localStorage → semua 11

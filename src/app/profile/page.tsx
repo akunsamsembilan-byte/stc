@@ -50,6 +50,8 @@ const PROFILE_STYLES = `
     --text-3:       rgba(255,255,255,0.28);
     --accent:       #4caf50;
     --accent-dim:   #66bb6a;
+    --hairline:     rgba(255,255,255,0.06);
+    --chip-bg:      rgba(76,175,80,0.09);
     --error:        #ff453a;
     --warn:         #ff9f0a;
     --success:      #30d158;
@@ -229,6 +231,80 @@ const PROFILE_STYLES = `
   .pf-search-input { width:100%;padding:10px 10px 10px 36px;border-radius:11px;border:1px solid rgba(76,175,80,0.20);background:rgba(0,0,0,0.35);outline:none;font-size:15px;color:#fff;font-family:var(--font);-webkit-appearance:none;appearance:none;transition:border-color 0.2s; }
   .pf-search-input::placeholder { color:rgba(255,255,255,0.28); }
   .pf-search-input:focus { border-color:rgba(76,175,80,0.50); }
+
+  /* ============================================================
+     MOBILE — tampilan Apple-like (seperti panel admin), theme-aware.
+     Hanya aktif < 768px; desktop tetap desain lama. Aksen hijau dipertahankan.
+     ============================================================ */
+  @media (max-width: 767px) {
+    /* Dark (default app) — kartu netral gelap */
+    .pf-root {
+      --bg:        #000000;
+      --surface:   #1c1c1e;
+      --surface-2: #2c2c2e;
+      --border:    rgba(255,255,255,0.10);
+      --border-hi: rgba(255,255,255,0.10);
+      --text-1:    #f2f2f7;
+      --text-2:    rgba(235,235,245,0.60);
+      --text-3:    rgba(235,235,245,0.32);
+      --hairline:  rgba(255,255,255,0.08);
+      --chip-bg:   rgba(76,175,80,0.16);
+    }
+
+    /* Kartu bersih: tanpa glow/blur berat, border halus, sudut lembut */
+    .pf-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .pf-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: 1px solid var(--border);
+      border-radius: 18px;
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+    .pf-hero::before { display: none; }
+
+    /* Section label netral ala admin (tanpa garis hijau) */
+    .pf-section-label {
+      color: var(--text-3);
+      border-left: none;
+      padding: 0 4px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .pf-info-row { border-bottom: 1px solid var(--hairline); }
+    .pf-tap-row  { border-bottom: 1px solid var(--hairline); }
+    @media (hover:hover) { .pf-tap-row:hover { background: var(--surface-2) !important; } }
+    .pf-tap-row:active { background: var(--surface-2) !important; }
+
+    /* Hilangkan ambient orbs gelap di mobile */
+    .pf-orb { display: none; }
+  }
+
+  /* Light mode di mobile — kartu putih ala iOS */
+  @media (max-width: 767px) {
+    body[data-theme="light"] .pf-root {
+      --bg:        #f2f2f7;
+      --surface:   #ffffff;
+      --surface-2: #f2f2f7;
+      --border:    rgba(0,0,0,0.08);
+      --border-hi: rgba(0,0,0,0.06);
+      --text-1:    #1c1c1e;
+      --text-2:    rgba(60,60,67,0.62);
+      --text-3:    rgba(60,60,67,0.34);
+      --hairline:  rgba(0,0,0,0.06);
+      --chip-bg:   rgba(76,175,80,0.12);
+    }
+    body[data-theme="light"] .pf-card,
+    body[data-theme="light"] .pf-hero { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  }
 `;
 
 // ─────────────────────────────────────────────
@@ -771,13 +847,13 @@ function ProfilePageContent() {
   }) => (
     <div className={last ? '' : 'pf-info-row'} style={{ display: 'flex', alignItems: 'center', padding: '13px 16px', gap: 12 }}>
       {icon && (
-        <div style={{ width: 32, height: 32, borderRadius: 9, background: 'rgba(76,175,80,0.09)', border: '1px solid rgba(76,175,80,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 9, background: 'var(--chip-bg)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           {icon}
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', marginBottom: 2 }}>{label}</p>
-        <p style={{ fontSize: 14, color: value ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.22)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value || '—'}</p>
+        <p style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 2 }}>{label}</p>
+        <p style={{ fontSize: 14, color: value ? 'var(--text-1)' : 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value || '—'}</p>
       </div>
       {verified != null && (
         <span style={{ fontSize: 11, fontWeight: 600, color: verified ? '#30d158' : '#ff9f0a', background: verified ? 'rgba(48,209,88,0.12)' : 'rgba(255,159,10,0.12)', padding: '3px 8px', borderRadius: 99, flexShrink: 0, border: `1px solid ${verified ? 'rgba(48,209,88,0.20)' : 'rgba(255,159,10,0.20)'}` }}>
@@ -793,9 +869,9 @@ function ProfilePageContent() {
   }) => (
     <button onClick={onClick} className="pf-tap-row" style={{ borderBottom: last ? 'none' : undefined }}>
       <div style={{ width: 34, height: 34, borderRadius: 9, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: danger ? '0 2px 8px rgba(255,69,58,0.20)' : '0 2px 8px rgba(0,0,0,0.20)' }}>{icon}</div>
-      <span style={{ flex: 1, fontSize: 15, color: danger ? '#ff453a' : '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{label}</span>
-      {value && <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)', marginRight: 6, flexShrink: 0, maxWidth: '40vw', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>}
-      {chevron && <svg width="6" height="11" viewBox="0 0 7 12" fill="none" style={{ flexShrink: 0, opacity: 0.6 }}><path d="M1 1l5 5-5 5" stroke={danger ? '#ff453a' : 'rgba(255,255,255,0.50)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      <span style={{ flex: 1, fontSize: 15, color: danger ? 'var(--error)' : 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{label}</span>
+      {value && <span style={{ fontSize: 13, color: 'var(--text-2)', marginRight: 6, flexShrink: 0, maxWidth: '40vw', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>}
+      {chevron && <svg width="6" height="11" viewBox="0 0 7 12" fill="none" style={{ flexShrink: 0, opacity: 0.6 }}><path d="M1 1l5 5-5 5" stroke={danger ? 'var(--error)' : 'var(--text-3)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
     </button>
   );
 
@@ -826,8 +902,8 @@ function ProfilePageContent() {
           </div>
         ) : (
           <>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: -0.5, marginBottom: 5, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.42)', marginBottom: 14, wordBreak: 'break-all', maxWidth: 'min(240px,82vw)', lineHeight: 1.4 }}>{profile?.email}</p>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-1)', letterSpacing: -0.5, marginBottom: 5, lineHeight: 1.2, maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 12px' }}>{getDisplayName()}</h2>
+            <p style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 14, wordBreak: 'break-all', maxWidth: 'min(240px,82vw)', lineHeight: 1.4 }}>{profile?.email}</p>
 
             {/* Badges */}
             <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 4 }}>
@@ -838,7 +914,7 @@ function ProfilePageContent() {
                 </span>
               )}
               {profile?.id && (
-                <button className="pf-copy-btn" onClick={copyId} aria-label={copied ? t('profile.copiedId') : t('profile.copyId')} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: copied ? '#30d158' : 'rgba(255,255,255,0.40)', background: copied ? 'rgba(48,209,88,0.10)' : 'rgba(255,255,255,0.07)', border: `1px solid ${copied ? 'rgba(48,209,88,0.25)' : 'rgba(255,255,255,0.12)'}`, padding: '4px 10px', borderRadius: 99, cursor: 'pointer', transition: 'all 0.2s', WebkitTapHighlightColor: 'transparent' }}>
+                <button className="pf-copy-btn" onClick={copyId} aria-label={copied ? t('profile.copiedId') : t('profile.copyId')} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: copied ? '#30d158' : 'var(--text-2)', background: copied ? 'rgba(48,209,88,0.10)' : 'var(--surface-2)', border: `1px solid ${copied ? 'rgba(48,209,88,0.25)' : 'var(--border)'}`, padding: '4px 10px', borderRadius: 99, cursor: 'pointer', transition: 'all 0.2s', WebkitTapHighlightColor: 'transparent' }}>
                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   ID: {String(profile.id).slice(0, 8)}…
                   {copied && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>}
@@ -878,7 +954,7 @@ function ProfilePageContent() {
           ),
         },
       ].map(({ label, color, bgColor, borderColor, val, sub, icon }) => (
-        <div key={label} style={{ background: 'rgba(10,10,22,0.80)', border: `1px solid ${borderColor}`, borderTop: `1px solid ${color}30`, borderRadius: 16, padding: '15px 14px', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', boxShadow: '0 4px 20px rgba(0,0,0,0.35)' }}>
+        <div key={label} style={{ background: 'var(--surface)', border: `1px solid ${borderColor}`, borderTop: `1px solid ${color}30`, borderRadius: 16, padding: '15px 14px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
           {/* Header: label left, icon right */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase' as const, letterSpacing: '0.07em' }}>{label}</span>
@@ -887,9 +963,9 @@ function ProfilePageContent() {
           {/* Big value */}
           {isLoading
             ? <Skel w="80%" h={20} r={4} />
-            : <p className="pf-balance-num" style={{ fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: -0.5, lineHeight: 1, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fmtBalance(val)}</p>
+            : <p className="pf-balance-num" style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-1)', letterSpacing: -0.5, lineHeight: 1, marginBottom: 5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fmtBalance(val)}</p>
           }
-          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>
+          <p style={{ fontSize: 11, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>
         </div>
       ))}
     </div>
@@ -932,11 +1008,11 @@ function ProfilePageContent() {
       )}
 
       {/* MOBILE HEADER */}
-      <div className="pf-mob-header" style={{ width: '100%', zIndex: 50, background: 'rgba(8,8,18,0.90)', backdropFilter: 'saturate(150%) blur(24px)', WebkitBackdropFilter: 'saturate(150%) blur(24px)', borderBottom: '0.5px solid rgba(76,175,80,0.20)' }}>
+      <div className="pf-mob-header" style={{ width: '100%', zIndex: 50, background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
         <div style={{ width: '100%', padding: '11px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <button onClick={() => setLangSheetOpen(true)} title={t('language.title')} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>🌐</button>
-          <h1 style={{ fontSize: 17, fontWeight: 700, color: '#fff', letterSpacing: -0.4 }}>{t('profile.title')}</h1>
-          <button onClick={() => loadProfile(true)} disabled={refreshing || isLoading} title={t('profile.refreshProfile')} style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#66bb6a', opacity: (refreshing || isLoading) ? 0.4 : 1, transition: 'opacity 0.15s', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
+          <button onClick={() => setLangSheetOpen(true)} title={t('language.title')} style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>🌐</button>
+          <h1 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-1)', letterSpacing: -0.4 }}>{t('profile.title')}</h1>
+          <button onClick={() => loadProfile(true)} disabled={refreshing || isLoading} title={t('profile.refreshProfile')} style={{ width: 36, height: 36, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-dim)', opacity: (refreshing || isLoading) ? 0.4 : 1, transition: 'opacity 0.15s', flexShrink: 0, WebkitTapHighlightColor: 'transparent' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" style={{ animation: (refreshing || isLoading) ? 'pf-spin 0.8s linear infinite' : 'none' }}>
               <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
             </svg>

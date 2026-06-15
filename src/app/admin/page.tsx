@@ -1144,7 +1144,6 @@ const StandingBanner: React.FC<{ onOpenChat: () => void }> = ({ onOpenChat }) =>
   const ex = fmtExpiry(s.expires_at);
   const expired = !!s.expires_at && new Date(s.expires_at).getTime() <= Date.now();
   const pending = s.pendingRequest;
-  const amount = (s.userCount * s.pricePerUser).toFixed(2);
   const tone = expired ? 'red' : ex.cls.includes('amber') ? 'amber' : 'emerald';
 
   const submit = async () => {
@@ -1161,15 +1160,22 @@ const StandingBanner: React.FC<{ onOpenChat: () => void }> = ({ onOpenChat }) =>
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${tone === 'red' ? 'bg-red-100 text-red-600' : tone === 'amber' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>{Icon.clock('w-4 h-4')}</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-slate-800">{expired ? 'Masa aktif habis' : `Masa aktif: ${ex.text} lagi`}</p>
-            <p className="text-xs text-slate-500">{s.expires_at ? `Aktif s/d ${new Date(s.expires_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Permanen'} · {s.userCount} user · reaktivasi ${amount}</p>
+            <p className="text-xs text-slate-500">{s.expires_at ? `Aktif s/d ${new Date(s.expires_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Permanen'} · {s.userCount} user</p>
           </div>
         </div>
         {pending ? (
-          <div className="mt-3 rounded-xl bg-white/70 border border-slate-200 p-3">
-            <p className="text-xs font-semibold text-slate-700">Permintaan {pending.days} hari menunggu persetujuan</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">Total <b>${Number(pending.amount_usd).toFixed(2)}</b> ({pending.user_count} user). Bayar via DM ke super-admin, lalu super-admin akan menyetujui.</p>
-            <button onClick={onOpenChat} className="mt-2 w-full py-2 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">{Icon.chat('w-3.5 h-3.5')} Chat Super-Admin untuk Bayar</button>
-          </div>
+          pending.status === 'awaiting_payment' ? (
+            <div className="mt-3 rounded-xl bg-white/70 border border-violet-200 p-3">
+              <p className="text-xs font-semibold text-slate-700">Disetujui — menunggu pembayaran ({pending.days} hari)</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Nominal yang harus dibayar: <b>${Number(pending.amount_usd).toFixed(2)}</b>. Bayar via DM ke super-admin; akun aktif kembali setelah pembayaran dikonfirmasi.</p>
+              <button onClick={onOpenChat} className="mt-2 w-full py-2 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">{Icon.chat('w-3.5 h-3.5')} Chat Super-Admin untuk Bayar</button>
+            </div>
+          ) : (
+            <div className="mt-3 rounded-xl bg-white/70 border border-slate-200 p-3">
+              <p className="text-xs font-semibold text-slate-700">Permintaan {pending.days} hari menunggu persetujuan</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Super-admin akan menetapkan nominal pembayaran setelah menyetujui permintaan Anda.</p>
+            </div>
+          )
         ) : (
           <button onClick={() => setOpen(true)} className={`mt-3 w-full py-2 rounded-lg text-white text-xs font-semibold transition-colors ${tone === 'red' ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}>
             {expired ? 'Ajukan Reaktivasi' : 'Perpanjang Masa Aktif'}
@@ -1184,9 +1190,7 @@ const StandingBanner: React.FC<{ onOpenChat: () => void }> = ({ onOpenChat }) =>
             <div className="flex-1"><h3 className="text-lg font-bold text-slate-800">Reaktivasi Akun</h3><p className="text-xs text-slate-400">Pilih paket masa aktif</p></div>
           </div>
           <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 mb-3">
-            <p className="text-xs text-slate-500">Biaya = jumlah user yang Anda tambahkan × ${s.pricePerUser}</p>
-            <p className="text-2xl font-black text-slate-800 mt-1">${amount}</p>
-            <p className="text-[11px] text-slate-400">{s.userCount} user × ${s.pricePerUser}</p>
+            <p className="text-xs text-slate-500">Nominal pembayaran akan ditetapkan oleh super-admin setelah permintaan Anda disetujui.</p>
           </div>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Paket Durasi</p>
           <div className="flex gap-2 mb-4">
@@ -1198,7 +1202,7 @@ const StandingBanner: React.FC<{ onOpenChat: () => void }> = ({ onOpenChat }) =>
           <button onClick={submit} disabled={busy} className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
             {busy && <Spinner cls="w-4 h-4 border-2" />} Ajukan Reaktivasi {days} Hari
           </button>
-          <p className="text-[11px] text-slate-400 text-center mt-2">Setelah diajukan, bayar via DM ke super-admin. Akun aktif kembali setelah super-admin menyetujui.</p>
+          <p className="text-[11px] text-slate-400 text-center mt-2">Setelah diajukan, super-admin akan menetapkan nominal. Bayar via DM, lalu akun aktif kembali setelah pembayaran dikonfirmasi.</p>
         </Modal>
       )}
     </>
@@ -1219,21 +1223,37 @@ const ReactivationRequestsDialog: React.FC<{ onClose: () => void; onChanged: () 
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  const doAct = async (id: number, approve: boolean) => {
+  const [amountInput, setAmountInput] = useState<Record<number, string>>({});
+
+  const doApprove = async (id: number) => {
+    const amt = parseFloat(amountInput[id] ?? '');
+    if (!(amt > 0)) { setErr('Masukkan nominal pembayaran (> 0)'); return; }
     setBusyId(id); setErr(null);
-    try { approve ? await api.admin.reactivationApprove(id) : await api.admin.reactivationReject(id); await load(); onChanged(); }
+    try { await api.admin.reactivationApprove(id, amt); await load(); onChanged(); }
+    catch (e: any) { setErr(e?.message ?? 'Gagal memproses'); }
+    finally { setBusyId(null); }
+  };
+  const doConfirm = async (id: number) => {
+    setBusyId(id); setErr(null);
+    try { await api.admin.reactivationConfirmPayment(id); await load(); onChanged(); }
+    catch (e: any) { setErr(e?.message ?? 'Gagal memproses'); }
+    finally { setBusyId(null); }
+  };
+  const doReject = async (id: number) => {
+    setBusyId(id); setErr(null);
+    try { await api.admin.reactivationReject(id); await load(); onChanged(); }
     catch (e: any) { setErr(e?.message ?? 'Gagal memproses'); }
     finally { setBusyId(null); }
   };
 
-  const pending = list.filter(r => r.status === 'pending');
-  const history = list.filter(r => r.status !== 'pending').slice(0, 20);
+  const active  = list.filter(r => r.status === 'pending' || r.status === 'awaiting_payment');
+  const history = list.filter(r => r.status === 'paid' || r.status === 'approved' || r.status === 'rejected').slice(0, 20);
 
   return (
     <Modal onClose={onClose} wide>
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0"><span className="text-violet-600">{Icon.clock('w-5 h-5')}</span></div>
-        <div className="flex-1"><h3 className="text-lg font-bold text-slate-800">Permintaan Reaktivasi</h3><p className="text-xs text-slate-400">{pending.length} menunggu persetujuan</p></div>
+        <div className="flex-1"><h3 className="text-lg font-bold text-slate-800">Permintaan Reaktivasi</h3><p className="text-xs text-slate-400">{active.length} perlu tindakan</p></div>
         <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><span className="text-slate-500">{Icon.x('w-4 h-4')}</span></button>
       </div>
       {err && <p className="text-xs text-red-500 mb-2">{err}</p>}
@@ -1241,25 +1261,50 @@ const ReactivationRequestsDialog: React.FC<{ onClose: () => void; onChanged: () 
         <div className="flex justify-center py-10"><Spinner cls="w-5 h-5 border-2 text-violet-400" /></div>
       ) : (
         <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
-          {pending.length === 0 && <p className="text-center text-xs text-slate-400 py-6">Tidak ada permintaan menunggu.</p>}
-          {pending.map(r => (
-            <div key={r.id} className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+          {active.length === 0 && <p className="text-center text-xs text-slate-400 py-6">Tidak ada permintaan yang perlu tindakan.</p>}
+          {active.map(r => (
+            <div key={r.id} className={`rounded-xl border p-3 ${r.status === 'awaiting_payment' ? 'border-violet-200 bg-violet-50' : 'border-amber-200 bg-amber-50'}`}>
               <div className="flex items-center gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-slate-800 truncate">{r.admin_name || r.admin_email.split('@')[0]}</p>
                   <p className="text-xs text-slate-500 truncate">{r.admin_email}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-black text-slate-800">${Number(r.amount_usd).toFixed(2)}</p>
                   <p className="text-[10px] text-slate-400">{r.days} hari · {r.user_count} user</p>
+                  {r.status === 'awaiting_payment' && <p className="text-sm font-black text-violet-700">${Number(r.amount_usd).toFixed(2)}</p>}
                 </div>
               </div>
-              <div className="flex gap-2 mt-2.5">
-                <button onClick={() => doAct(r.id, false)} disabled={busyId === r.id} className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-100 disabled:opacity-50 transition-colors">Tolak</button>
-                <button onClick={() => doAct(r.id, true)} disabled={busyId === r.id} className="flex-1 py-2 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 disabled:opacity-50 flex items-center justify-center gap-1.5 transition-colors">
-                  {busyId === r.id ? <Spinner cls="w-3.5 h-3.5 border-2" /> : Icon.check('w-3.5 h-3.5')} Accept (sudah dibayar)
-                </button>
-              </div>
+
+              {r.status === 'pending' ? (
+                <>
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <span className="text-xs font-semibold text-slate-500">Nominal $</span>
+                    <input
+                      type="number" inputMode="decimal" min="0" step="0.01"
+                      value={amountInput[r.id] ?? ''}
+                      onChange={e => setAmountInput(p => ({ ...p, [r.id]: e.target.value }))}
+                      placeholder="0.00"
+                      className="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-violet-400"
+                    />
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => doReject(r.id)} disabled={busyId === r.id} className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-100 disabled:opacity-50 transition-colors">Tolak</button>
+                    <button onClick={() => doApprove(r.id)} disabled={busyId === r.id} className="flex-1 py-2 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 disabled:opacity-50 flex items-center justify-center gap-1.5 transition-colors">
+                      {busyId === r.id ? <Spinner cls="w-3.5 h-3.5 border-2" /> : Icon.check('w-3.5 h-3.5')} Setujui & Kirim Tagihan
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-[11px] text-slate-500 mt-1.5">Menunggu admin membayar. Konfirmasi setelah pembayaran diterima.</p>
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => doReject(r.id)} disabled={busyId === r.id} className="flex-1 py-2 rounded-lg border border-slate-200 text-slate-500 text-xs font-semibold hover:bg-slate-100 disabled:opacity-50 transition-colors">Batalkan</button>
+                    <button onClick={() => doConfirm(r.id)} disabled={busyId === r.id} className="flex-1 py-2 rounded-lg bg-violet-500 text-white text-xs font-semibold hover:bg-violet-600 disabled:opacity-50 flex items-center justify-center gap-1.5 transition-colors">
+                      {busyId === r.id ? <Spinner cls="w-3.5 h-3.5 border-2" /> : Icon.check('w-3.5 h-3.5')} Konfirmasi Sudah Dibayar
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
           {history.length > 0 && (
@@ -1269,7 +1314,7 @@ const ReactivationRequestsDialog: React.FC<{ onClose: () => void; onChanged: () 
                 <div key={r.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 text-xs">
                   <span className="flex-1 truncate text-slate-600">{r.admin_email}</span>
                   <span className="text-slate-400">{r.days}h · ${Number(r.amount_usd).toFixed(2)}</span>
-                  <span className={`font-bold ${r.status === 'approved' ? 'text-emerald-600' : 'text-red-500'}`}>{r.status === 'approved' ? 'disetujui' : 'ditolak'}</span>
+                  <span className={`font-bold ${r.status === 'rejected' ? 'text-red-500' : 'text-emerald-600'}`}>{r.status === 'rejected' ? 'ditolak' : r.status === 'paid' ? 'lunas' : 'disetujui'}</span>
                 </div>
               ))}
             </>

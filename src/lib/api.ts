@@ -631,7 +631,9 @@ export interface ReactivationRequest {
   days: number;
   user_count: number;
   amount_usd: number;
-  status: 'pending' | 'approved' | 'rejected';
+  // pending = menunggu super-admin; awaiting_payment = di-ACC, menunggu bayar;
+  // paid = lunas + reaktivasi diterapkan; approved = data lama (kompatibilitas); rejected = ditolak
+  status: 'pending' | 'awaiting_payment' | 'paid' | 'approved' | 'rejected';
   created_at: string;
   resolved_at?: string | null;
   resolved_by?: string | null;
@@ -642,8 +644,6 @@ export interface AdminStanding {
   is_active: boolean;
   isSuperAdmin: boolean;
   userCount: number;
-  pricePerUser: number;
-  amountUsd: number;
   pendingRequest: ReactivationRequest | null;
 }
 
@@ -924,7 +924,8 @@ export const api = {
     standing:        () => req<AdminStanding>('GET', '/admin/standing'),
     reactivationRequest: (days: number) => req<ReactivationRequest>('POST', '/admin/reactivation/request', { days }),
     reactivationList:    () => req<ReactivationRequest[]>('GET', '/admin/reactivation/requests'),
-    reactivationApprove: (id: number) => req<{ admin_email: string; days: number }>('POST', '/admin/reactivation/approve', { id }),
+    reactivationApprove: (id: number, amount: number) => req<{ admin_email: string; days: number; amount_usd: number }>('POST', '/admin/reactivation/approve', { id, amount }),
+    reactivationConfirmPayment: (id: number) => req<{ admin_email: string; days: number }>('POST', '/admin/reactivation/confirm-payment', { id }),
     reactivationReject:  (id: number) => req<void>('POST', '/admin/reactivation/reject', { id }),
   },
 };

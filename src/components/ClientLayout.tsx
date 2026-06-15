@@ -165,9 +165,13 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
               margin: 0,
               padding: 0,
               height: '100%',
-              // Safe-area inset atas & bawah ditangani sekali oleh <body> (globals.css).
-              // Di sini hanya sisakan ruang untuk BottomNav (tinggi 56px) pada halaman app.
-              paddingBottom: isPublic ? 0 : 56,
+              // Safe-area inset (atas & bawah) diterapkan DI SINI dengan env() LANGSUNG —
+              // <main> adalah satu-satunya sumber inset. (env() via var(--sat) di <body>
+              // tidak reliable di Android WebView, dan header tiap halaman tidak menambah lagi.)
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              paddingBottom: isPublic
+                ? 'env(safe-area-inset-bottom, 0px)'
+                : 'calc(56px + env(safe-area-inset-bottom, 0px))',
               opacity: ready ? 1 : 0,
               transition: ready ? 'opacity 0.35s ease-out' : 'none',
             } as React.CSSProperties}

@@ -35,10 +35,11 @@ html, body {
 }
 
 body {
-  padding-top:    var(--sat);   /* safe-area-inset-top  — fix Android 15 edge-to-edge */
-  padding-bottom: var(--sab);   /* safe-area-inset-bottom — fix system nav bar bawah  */
-  padding-right:  var(--sar);
-  padding-left:   var(--sal);
+  /* Inset ATAS & BAWAH ditangani <main> (ClientLayout) dengan env() LANGSUNG.
+     Catatan: env() yang dirujuk via var(--sat) TIDAK reliable di Android WebView
+     (sering resolve 0), jadi jangan dipakai untuk top/bottom di sini. */
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-left:  env(safe-area-inset-left,  0px);
 }
 
 /* ============================================================

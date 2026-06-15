@@ -1459,7 +1459,7 @@ export default function AdminPage() {
       `}</style>
 
       {/* ── HEADER ───────────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40"
+      <div className="bg-white border-b border-slate-100 shadow-sm relative z-40"
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <div className="flex items-center gap-3 px-4 py-3">

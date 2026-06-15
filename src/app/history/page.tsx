@@ -427,11 +427,9 @@ function HistoryPageContent() {
         }
       `}</style>
 
-      {/* ── STICKY HEADER ── */}
-      {/* ✅ FIX: position:'sticky' + top:0 agar header nempel saat <main> discroll */}
+      {/* ── HEADER (normal, ikut scroll) ── */}
       <div style={{
-        position: 'sticky',
-        top: 0,
+        position: 'relative',
         width: '100%',
         zIndex: 50,
         background: 'rgba(242,242,247,0.92)',

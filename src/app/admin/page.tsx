@@ -826,12 +826,9 @@ const StatsDetailDialog: React.FC<{
           .filter(u => (u.lastLogin ?? 0) > threshold24h)
           .sort((a, b) => (b.lastLogin ?? 0) - (a.lastLogin ?? 0));
       case 'recentAdded':
-        // Hanya user self-registration (added_by = system) dalam 24 jam terakhir, urut terbaru
+        // Hanya user yang mendaftar sendiri lewat halaman register (added_by = self-register), urut terbaru
         return allUsers
-          .filter(u =>
-            (u.addedBy ?? '').toLowerCase() === 'system' &&
-            (u.createdAt ?? 0) > threshold24h
-          )
+          .filter(u => (u.addedBy ?? '').toLowerCase() === 'self-register')
           .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
       default:
         return [...allUsers].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
@@ -1490,7 +1487,7 @@ export default function AdminPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-dvh bg-slate-100 pb-24 font-sans antialiased">
+    <div className="admin-root min-h-dvh bg-slate-100 pb-24 font-sans antialiased">
       <style>{`
         @keyframes adminSlideUp {
           from { opacity: 0; transform: translateY(24px); }

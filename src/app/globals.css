@@ -506,3 +506,40 @@ body:not([data-theme="light"]) .admin-root textarea {
   border-color: rgba(255,255,255,0.12) !important;
 }
 body:not([data-theme="light"]) .admin-root input::placeholder { color: rgba(255,255,255,0.35) !important; }
+
+/* Accent TEXT — shade gelap (500/600/700/800) tidak terbaca di latar gelap.
+   Cerahkan ke shade ~400 agar kontras cukup. */
+body:not([data-theme="light"]) .admin-root .text-emerald-500,
+body:not([data-theme="light"]) .admin-root .text-emerald-600,
+body:not([data-theme="light"]) .admin-root .text-emerald-700,
+body:not([data-theme="light"]) .admin-root .text-emerald-800 { color: #34d399 !important; }
+
+body:not([data-theme="light"]) .admin-root .text-violet-500,
+body:not([data-theme="light"]) .admin-root .text-violet-600,
+body:not([data-theme="light"]) .admin-root .text-violet-700,
+body:not([data-theme="light"]) .admin-root .text-violet-800 { color: #a78bfa !important; }
+
+body:not([data-theme="light"]) .admin-root .text-amber-500,
+body:not([data-theme="light"]) .admin-root .text-amber-600,
+body:not([data-theme="light"]) .admin-root .text-amber-700,
+body:not([data-theme="light"]) .admin-root .text-amber-800 { color: #fbbf24 !important; }
+
+body:not([data-theme="light"]) .admin-root .text-red-500,
+body:not([data-theme="light"]) .admin-root .text-red-600,
+body:not([data-theme="light"]) .admin-root .text-red-700,
+body:not([data-theme="light"]) .admin-root .text-red-800 { color: #f87171 !important; }
+
+body:not([data-theme="light"]) .admin-root .text-blue-500,
+body:not([data-theme="light"]) .admin-root .text-blue-600,
+body:not([data-theme="light"]) .admin-root .text-blue-700,
+body:not([data-theme="light"]) .admin-root .text-blue-800 { color: #60a5fa !important; }
+
+body:not([data-theme="light"]) .admin-root .text-cyan-500,
+body:not([data-theme="light"]) .admin-root .text-cyan-600,
+body:not([data-theme="light"]) .admin-root .text-cyan-700,
+body:not([data-theme="light"]) .admin-root .text-cyan-800 { color: #22d3ee !important; }
+
+body:not([data-theme="light"]) .admin-root .text-teal-500,
+body:not([data-theme="light"]) .admin-root .text-teal-600,
+body:not([data-theme="light"]) .admin-root .text-teal-700,
+body:not([data-theme="light"]) .admin-root .text-teal-800 { color: #2dd4bf !important; }

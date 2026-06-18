@@ -299,6 +299,28 @@ export async function isWhitelisted(email: string): Promise<boolean> {
   return !!data;
 }
 
+/**
+ * Cek whitelist berdasarkan Stockity user_id (lebih andal daripada email,
+ * karena email akun Stockity bisa berbeda dari yang didaftarkan).
+ * Memakai limit(1) (bukan maybeSingle) karena user_id tidak di-constraint unik.
+ */
+export async function isWhitelistedByUserId(userId: string | number): Promise<boolean> {
+  const uid = String(userId ?? '').trim();
+  if (!uid) return false;
+  const { data, error } = await supabase
+    .from('whitelist_users')
+    .select('user_id')
+    .eq('user_id', uid)
+    .eq('is_active', true)
+    .limit(1);
+
+  if (error) {
+    console.error('[Supabase] isWhitelistedByUserId error:', error);
+    return false;
+  }
+  return Array.isArray(data) && data.length > 0;
+}
+
 export async function checkWhitelist(email: string): Promise<boolean> {
   const { data, error } = await supabase
     .from('whitelist_users')

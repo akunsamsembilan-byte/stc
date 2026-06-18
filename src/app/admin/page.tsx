@@ -225,7 +225,6 @@ const UserCard: React.FC<{
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-slate-800 truncate leading-tight">{user.name ?? '(no name)'}</p>
-          <p className="text-xs text-slate-500 truncate">{user.email}</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className={`text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider ${active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
@@ -316,10 +315,8 @@ const UserDialog: React.FC<{
   const [resetLogin, setResetLogin] = useState(false);
   const [deactivate, setDeactivate] = useState(false);
 
-  // Di mode add, email tidak wajib — akan di-generate otomatis dari userId
-  const valid = mode === 'add'
-    ? name.trim() && userId.trim() && deviceId.trim()
-    : name.trim() && email.trim() && userId.trim() && deviceId.trim();
+  // Whitelist berbasis User ID (Stockity) — email tidak ditampilkan/diperlukan admin.
+  const valid = name.trim() && userId.trim() && deviceId.trim();
 
   const handleSave = () => {
     if (!valid) return;
@@ -343,7 +340,7 @@ const UserDialog: React.FC<{
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-bold text-slate-800">{mode === 'add' ? 'Tambah User' : 'Edit User'}</h3>
-          <p className="text-xs text-slate-400">{mode === 'edit' ? user?.email : 'Data whitelist baru'}</p>
+          <p className="text-xs text-slate-400">{mode === 'edit' ? `ID: ${user?.userId ?? '—'}` : 'Data whitelist baru'}</p>
         </div>
         <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
           <span className="text-slate-500">{Icon.x('w-4 h-4')}</span>
@@ -352,21 +349,8 @@ const UserDialog: React.FC<{
 
       <div className="flex flex-col gap-3">
         <Inp label="Nama Lengkap" value={name} onChange={setName} placeholder="John Doe" />
-        {mode === 'edit' && (
-          <Inp label="Email" value={email} onChange={setEmail} placeholder="john@example.com" type="email" />
-        )}
         <Inp label="User ID (Stockity)" value={userId} onChange={setUserId} placeholder="12345" hint="ID user di platform Stockity" />
         <Inp label="Device ID" value={deviceId} onChange={setDeviceId} placeholder="device_abc123" />
-        {mode === 'add' && (
-          <Inp
-            label="Email (opsional)"
-            value={email}
-            onChange={setEmail}
-            placeholder="Kosongkan → otomatis dari User ID"
-            type="email"
-            hint={userId.trim() ? `Jika kosong: uid_${userId.trim()}@stockity.local` : 'Jika kosong, akan di-generate otomatis dari User ID'}
-          />
-        )}
         {/* Added By field hidden */}
 
         {mode === 'edit' && isSuperAdmin && (
@@ -418,7 +402,7 @@ const DeleteDialog: React.FC<{ user: WhitelistUser; onClose: () => void; onConfi
       </div>
       <h3 className="text-lg font-bold text-slate-800 mb-1">Hapus User?</h3>
       <p className="text-sm font-medium text-slate-600">{user.name}</p>
-      <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
+      <p className="text-xs text-slate-400 mt-0.5">{user.userId ? `ID: ${user.userId}` : '(tanpa ID)'}</p>
       <p className="text-xs text-red-500 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
     </div>
     <div className="flex gap-2.5">
@@ -882,7 +866,6 @@ const StatsDetailDialog: React.FC<{
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-slate-800 truncate leading-tight">{u.name ?? '(no name)'}</p>
-                  <p className="text-xs text-slate-500 truncate">{u.email}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className={`text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider ${active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>

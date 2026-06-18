@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
 import { storage, isSessionValid } from '@/lib/storage';
-import { isWhitelisted, updateLastLogin, getRegistrationConfig } from '@/lib/supabaseRepository';
+import { isWhitelistedByUserId, updateLastLogin, getRegistrationConfig } from '@/lib/supabaseRepository';
 import { LanguageProvider, useLanguage, AVAILABLE_LANGUAGES, COUNTRY_ENTRIES, Language, isWindows } from '@/lib';
 
 type SplashPhase = 'hidden' | 'welcome' | 'verified' | 'out';
@@ -700,7 +700,7 @@ function LoginPageContent() {
       const res = await api.login(emailVal, passVal);
 
       setLoginStep('whitelist');
-      const allowed = await isWhitelisted(res.email || emailVal);
+      const allowed = await isWhitelistedByUserId(res.userId);
       if (!allowed) {
         setIsWhitelistError(true);
         throw new Error(t('login.notWhitelisted'));

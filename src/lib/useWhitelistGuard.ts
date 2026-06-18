@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { storage, SESSION_KEYS } from './storage';
-import { isWhitelisted } from './supabaseRepository';
+import { isWhitelistedByUserId } from './supabaseRepository';
 import { supabase } from './supabase';
 
 // ── Konfigurasi ───────────────────────────────────────────────────────────────
@@ -42,6 +42,7 @@ export function useWhitelistGuard(
   });
 
   const emailRef       = useRef<string | null>(null);
+  const userIdRef      = useRef<string | null>(null);
   const blockedRef     = useRef(false);       // hindari double-dispatch
   const intervalRef    = useRef<ReturnType<typeof setInterval>>();
   const channelRef     = useRef<ReturnType<typeof supabase.channel>>();
@@ -51,24 +52,28 @@ export function useWhitelistGuard(
   const runCheck = useCallback(async (isInitial = false): Promise<void> => {
     if (!mountedRef.current) return;
 
-    // Ambil email dari session (lazy — sekali saja)
-    if (!emailRef.current) {
-      const email = await storage.get(SESSION_KEYS.EMAIL);
-      if (!email) {
-        // Tidak ada session email — bukan urusan hook ini, biarkan ClientLayout handle
+    // Ambil user_id (+ email utk tampilan) dari session (lazy — sekali saja)
+    if (!userIdRef.current) {
+      const [userId, email] = await Promise.all([
+        storage.get(SESSION_KEYS.USER_ID),
+        storage.get(SESSION_KEYS.EMAIL),
+      ]);
+      if (!userId) {
+        // Tidak ada session user_id — bukan urusan hook ini, biarkan ClientLayout handle
         if (mountedRef.current) {
           setState(prev => ({ ...prev, isChecking: false }));
         }
         return;
       }
-      emailRef.current = email;
+      userIdRef.current = userId;
+      emailRef.current  = email ?? null;
       if (mountedRef.current) {
-        setState(prev => ({ ...prev, email }));
+        setState(prev => ({ ...prev, email: email ?? null }));
       }
     }
 
     try {
-      const allowed = await isWhitelisted(emailRef.current!);
+      const allowed = await isWhitelistedByUserId(userIdRef.current!);
 
       if (!mountedRef.current) return;
 
@@ -100,21 +105,21 @@ export function useWhitelistGuard(
   }, []);
 
   // ── Setup realtime subscription ke tabel whitelist_users ─────────────────
-  const setupRealtime = useCallback((email: string) => {
+  const setupRealtime = useCallback((userId: string) => {
     // Unsubscribe dulu jika sudah ada channel lama
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
     }
 
     channelRef.current = supabase
-      .channel(`whitelist_guard:${email}`)
+      .channel(`whitelist_guard:${userId}`)
       .on(
         'postgres_changes',
         {
           event:  '*',
           schema: 'public',
           table:  'whitelist_users',
-          filter: `email=eq.${email.toLowerCase().trim()}`,
+          filter: `user_id=eq.${userId}`,
         },
         (payload) => {
           if (!mountedRef.current) return;
@@ -124,7 +129,7 @@ export function useWhitelistGuard(
           if (payload.eventType === 'DELETE') {
             if (!blockedRef.current) {
               blockedRef.current = true;
-              setState({ isBlocked: true, isChecking: false, email });
+              setState({ isBlocked: true, isChecking: false, email: emailRef.current });
             }
             return;
           }
@@ -134,7 +139,7 @@ export function useWhitelistGuard(
           if (payload.eventType === 'UPDATE' && row.is_active === false) {
             if (!blockedRef.current) {
               blockedRef.current = true;
-              setState({ isBlocked: true, isChecking: false, email });
+              setState({ isBlocked: true, isChecking: false, email: emailRef.current });
             }
             return;
           }
@@ -145,7 +150,7 @@ export function useWhitelistGuard(
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('[WhitelistGuard] Realtime subscribed untuk:', email);
+          console.log('[WhitelistGuard] Realtime subscribed untuk userId:', userId);
         }
       });
   }, [runCheck]);
@@ -164,9 +169,9 @@ export function useWhitelistGuard(
     const initTimer = setTimeout(async () => {
       await runCheck(true);
 
-      // Setup realtime jika email sudah diketahui
-      if (emailRef.current) {
-        setupRealtime(emailRef.current);
+      // Setup realtime jika user_id sudah diketahui
+      if (userIdRef.current) {
+        setupRealtime(userIdRef.current);
       }
 
       // Interval periodik (fallback jika realtime tidak tersedia)

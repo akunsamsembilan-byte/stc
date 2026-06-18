@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '@/lib/api';
 import { storage, isSessionValid, SESSION_KEYS } from '@/lib/storage';
-import { isWhitelistedByUserId, updateLastLogin, getRegistrationConfig } from '@/lib/supabaseRepository';
+import { isWhitelistedByUserId, isWhitelisted, updateLastLogin, getRegistrationConfig } from '@/lib/supabaseRepository';
 import { LanguageProvider, useLanguage, AVAILABLE_LANGUAGES, COUNTRY_ENTRIES, Language, isWindows } from '@/lib';
 
 type SplashPhase = 'hidden' | 'welcome' | 'verified' | 'out';
@@ -703,7 +703,13 @@ function LoginPageContent() {
       // Admin & super-admin bypass cek whitelist (status dari backend, pakai token baru).
       const role = await api.admin.me(res.accessToken).catch(() => ({ isAdmin: false, isSuperAdmin: false }));
       const privileged = role.isAdmin || role.isSuperAdmin;
-      const allowed = privileged || await isWhitelistedByUserId(res.userId);
+      // Lolos jika admin/super-admin, ATAU cocok by user_id, ATAU by email
+      // (self-register: whitelist.user_id pakai profile.id yang bisa beda dari
+      //  session.user_id, jadi email jadi fallback).
+      const allowed =
+        privileged ||
+        await isWhitelistedByUserId(res.userId) ||
+        await isWhitelisted(res.email || emailVal);
       if (!allowed) {
         setIsWhitelistError(true);
         throw new Error(t('login.notWhitelisted'));

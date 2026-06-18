@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { storage, SESSION_KEYS } from './storage';
-import { isWhitelistedByUserId } from './supabaseRepository';
+import { isWhitelistedByUserId, isWhitelisted } from './supabaseRepository';
 import { supabase } from './supabase';
 
 // ── Konfigurasi ───────────────────────────────────────────────────────────────
@@ -74,8 +74,13 @@ export function useWhitelistGuard(
 
     try {
       // Admin & super-admin tidak tunduk whitelist (flag diset saat login).
+      // Selain itu: cocok by user_id ATAU by email (email = fallback untuk
+      // user self-register yang whitelist.user_id-nya beda dari session.user_id).
       const priv = await storage.get(SESSION_KEYS.IS_PRIVILEGED);
-      const allowed = priv === 'true' || await isWhitelistedByUserId(userIdRef.current!);
+      const allowed =
+        priv === 'true' ||
+        await isWhitelistedByUserId(userIdRef.current!) ||
+        await isWhitelisted(emailRef.current ?? '');
 
       if (!mountedRef.current) return;
 
